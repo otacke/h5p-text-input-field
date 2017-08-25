@@ -9,7 +9,9 @@ H5P.TextInputField = (function ($) {
   var MAIN_CONTAINER = 'h5p-text-input-field';
   var INPUT_LABEL = 'h5p-text-input-field-label';
   var INPUT_FIELD = 'h5p-text-input-field-textfield';
-  var CHAR_MESSAGE = 'h5p-text-input-field-message';
+  var WRAPPER_MESSAGE = 'h5p-text-input-field-message-wrapper';
+  var CHAR_MESSAGE = 'h5p-text-input-field-message-char';
+  var SAVE_MESSAGE = 'h5p-text-input-field-message-save';
 
   /**
    * Initialize module.
@@ -68,16 +70,31 @@ H5P.TextInputField = (function ($) {
     this.setState(this.previousState);
 
     if (self.maxTextLength !== '') {
-      this.$spaceMessage = $('<div>', {
-        'class': CHAR_MESSAGE
+       $wrapperMessage= $('<div>', {
+        'class': WRAPPER_MESSAGE
       }).appendTo(self.$inner);
 
+      this.$charMessage = $('<div>', {
+        'class': CHAR_MESSAGE
+      }).appendTo($wrapperMessage);
+
       this.$inputField.on('change keyup paste', function() {
-        self.$spaceMessage.html(
+        self.updateMessageSaved('');
+
+        self.$charMessage.html(
           self.params.remainingChars.replace(/@chars/g, self.computeRemainingChars()));
       });
 
+      this.$saveMessage = $('<div>', {
+        'class': SAVE_MESSAGE
+      }).appendTo($wrapperMessage);
+
       this.$inputField.trigger('change');
+    }
+    else {
+      this.$saveMessage = $('<div>', {
+        'class': SAVE_MESSAGE
+      }).appendTo(self.$inner);
     }
   };
 
@@ -113,6 +130,8 @@ H5P.TextInputField = (function ($) {
    * @return {object} Current state.
    */
   TextInputField.prototype.getCurrentState = function () {
+    this.updateMessageSaved(this.params.messageSave);
+
     // We could have just uses a string, but you never know when you need to store more parameters
     return {
       'inputField': this.$inputField.val()
@@ -138,8 +157,23 @@ H5P.TextInputField = (function ($) {
    * Compute the remaining number of characters
    * @returns {number} Returns number of characters left
    */
-  TextInputField.prototype.computeRemainingChars = function() {
+  TextInputField.prototype.computeRemainingChars = function () {
     return this.maxTextLength - this.$inputField.val().length;
+  };
+
+  /**
+   * Update the indicator message for saved text
+   * @param {string} saved - Message to indicate the text was saved
+   */
+  TextInputField.prototype.updateMessageSaved = function (saved) {
+    // Add/remove blending effect
+    if (saved === undefined || saved === '') {
+      this.$saveMessage.removeClass('h5p-text-input-field-message-save-animation');
+    }
+    else {
+      this.$saveMessage.addClass('h5p-text-input-field-message-save-animation');
+    }
+    this.$saveMessage.html(saved);
   };
 
   return TextInputField;
