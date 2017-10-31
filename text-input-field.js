@@ -9,7 +9,9 @@ H5P.TextInputField = (function ($) {
   var MAIN_CONTAINER = 'h5p-text-input-field';
   var INPUT_LABEL = 'h5p-text-input-field-label';
   var INPUT_FIELD = 'h5p-text-input-field-textfield';
-  var CHAR_MESSAGE = 'h5p-text-input-field-message';
+  var SPACE_MESSAGE = 'h5p-text-input-field-message';
+
+  var ariaId = 0;
 
   /**
    * Initialize module.
@@ -29,10 +31,8 @@ H5P.TextInputField = (function ($) {
       requiredField: false
     }, params);
 
-    // Set the maximum length for the textarea
-    this.maxTextLength = (typeof this.params.maximumLength === 'undefined') ?
-      '' :
-      parseInt(this.params.maximumLength, 10);
+    this.max = (typeof this.params.maximumLength === 'undefined') ? '' : parseInt(this.params.maximumLength, 10);
+    ariaId++;
   }
 
   /**
@@ -45,26 +45,28 @@ H5P.TextInputField = (function ($) {
     this.$inner = $container.addClass(MAIN_CONTAINER);
 
     this.$taskDescription = $('<div>', {
-      'class': INPUT_LABEL,
+      id: ariaId,
+      'class': INPUT_LABEL + (this.params.requiredField ? ' required' : ''),
       'html': self.params.taskDescription
     }).appendTo(self.$inner);
 
     this.$inputField = $('<textarea>', {
       'class': INPUT_FIELD,
       'rows': parseInt(self.params.inputFieldSize, 10),
-      'maxlength': self.maxTextLength,
+      'maxlength': self.max,
       'placeholder': self.params.placeholderText,
-      'tabindex': '0'
+      'tabindex': '0',
+      'aria-required': this.params.requiredField,
+      'aria-labelledby': ariaId
     }).appendTo(self.$inner);
 
-    if (self.maxTextLength !== '') {
+    if (self.max !== '') {
       this.$spaceMessage = $('<div>', {
-        'class': CHAR_MESSAGE
+        'class': SPACE_MESSAGE
       }).appendTo(self.$inner);
 
       this.$inputField.on('change keyup paste', function() {
-        self.$spaceMessage.html(
-          self.params.remainingChars.replace(/@chars/g, self.computeRemainingChars()));
+        self.$spaceMessage.html(self.params.remainingChars.replace('@chars', self.computeRemainingChars()));
       });
 
       this.$inputField.trigger('change');
@@ -88,6 +90,7 @@ H5P.TextInputField = (function ($) {
     return false;
   };
 
+
   /**
    * Retrieves the text input field
    * @returns {description:string, value:string} Returns input field
@@ -101,11 +104,11 @@ H5P.TextInputField = (function ($) {
   };
 
   /**
-   * Compute the remaining number of characters
-   * @returns {number} Returns number of characters left
+   * Compute the remaining characters
+   * @returns {description:string, value:string} Returns input field
    */
   TextInputField.prototype.computeRemainingChars = function() {
-    return this.maxTextLength - this.$inputField.val().length;
+    return this.max - this.$inputField.val().length;
   };
 
   return TextInputField;
