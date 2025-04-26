@@ -37,7 +37,7 @@
     "description": "Maximum number of characters for the text.",
     "importance": "low",
     "optional": true,
-    "min": "0"
+    "min": 0
   },
   {
     "name": "inputFieldSize",
